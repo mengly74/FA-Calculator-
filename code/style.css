@@ -46,3 +46,11 @@ button:hover {
 p, pre {
     margin-top: 10px;
 }
+
+/* New styles for success and error messages */
+.success {
+    color: green;
+}
+.error {
+    color: red;
+}

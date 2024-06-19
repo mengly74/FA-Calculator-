@@ -47,7 +47,14 @@ function checkDeterministic() {
         }
     }
 
-    document.getElementById('deterministic-result').textContent = isDeterministic ? 'The FA is deterministic.' : 'The FA is non-deterministic.';
+    let resultElement = document.getElementById('deterministic-result');
+    if (isDeterministic) {
+        resultElement.textContent = 'The FA is deterministic.';
+        resultElement.className = 'success';
+    } else {
+        resultElement.textContent = 'The FA is non-deterministic.';
+        resultElement.className = 'error';
+    }
 }
 
 function testString() {
@@ -59,13 +66,22 @@ function testString() {
         if (fa.transitions[currentState] && fa.transitions[currentState][symbol]) {
             currentState = fa.transitions[currentState][symbol][0];
         } else {
-            document.getElementById('acceptance-result').textContent = 'The string is not accepted by the FA.';
+            let resultElement = document.getElementById('acceptance-result');
+            resultElement.textContent = 'The string is not accepted by the FA.';
+            resultElement.className = 'error';
             return;
         }
     }
 
     let isAccepted = fa.acceptStates.includes(currentState);
-    document.getElementById('acceptance-result').textContent = isAccepted ? 'The string is accepted by the FA.' : 'The string is not accepted by the FA.';
+    let resultElement = document.getElementById('acceptance-result');
+    if (isAccepted) {
+        resultElement.textContent = 'The string is accepted by the FA.';
+        resultElement.className = 'success';
+    } else {
+        resultElement.textContent = 'The string is not accepted by the FA.';
+        resultElement.className = 'error';
+    }
 }
 
 function parseTransitions(transitionStr) {
