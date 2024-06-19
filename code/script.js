@@ -67,3 +67,151 @@ function testString() {
     let isAccepted = fa.acceptStates.includes(currentState);
     document.getElementById('acceptance-result').textContent = isAccepted ? 'The string is accepted by the FA.' : 'The string is not accepted by the FA.';
 }
+
+function parseTransitions(transitionStr) {
+    let transitions = {};
+    let lines = transitionStr.trim().split('\n');
+    for (let line of lines) {
+        let [from, rest] = line.split(',');
+        let [input, to] = rest.split('->');
+        if (!transitions[from]) transitions[from] = {};
+        transitions[from][input] = to;
+    }
+    return transitions;
+}
+
+function convertNFAtoDFA() {
+    let states = fa.states;
+    let alphabet = fa.alphabet;
+    let transitions = fa.transitions;
+    let startState = fa.startState;
+    let acceptStates = fa.acceptStates;
+
+    let dfaStates = [];
+    let dfaTransitions = {};
+    let dfaStartState = [startState];
+    let dfaAcceptStates = [];
+
+    let unmarkedStates = [dfaStartState];
+    let markedStates = [];
+
+    while (unmarkedStates.length > 0) {
+        let current = unmarkedStates.pop();
+        markedStates.push(current);
+
+        let stateName = current.sort().join(',');
+        if (!dfaStates.includes(stateName)) {
+            dfaStates.push(stateName);
+        }
+
+        if (current.some(state => acceptStates.includes(state))) {
+            dfaAcceptStates.push(stateName);
+        }
+
+        for (let symbol of alphabet) {
+            let nextStates = [];
+            for (let state of current) {
+                if (transitions[state] && transitions[state][symbol]) {
+                    nextStates = nextStates.concat(transitions[state][symbol]);
+                }
+            }
+            nextStates = [...new Set(nextStates)];
+
+            let nextStateName = nextStates.sort().join(',');
+            if (nextStateName && !dfaStates.includes(nextStateName)) {
+                unmarkedStates.push(nextStates);
+            }
+
+            if (!dfaTransitions[stateName]) dfaTransitions[stateName] = {};
+            dfaTransitions[stateName][symbol] = nextStateName;
+        }
+    }
+
+    let result = `States: ${dfaStates.join(', ')}\n`;
+    result += `Alphabet: ${alphabet.join(', ')}\n`;
+    result += `Start State: ${dfaStartState.join(', ')}\n`;
+    result += `Accept States: ${dfaAcceptStates.join(', ')}\n`;
+    result += `Transitions:\n`;
+    for (let state in dfaTransitions) {
+        for (let symbol in dfaTransitions[state]) {
+            result += `  ${state} --${symbol}--> ${dfaTransitions[state][symbol]}\n`;
+        }
+    }
+
+    document.getElementById('nfa-dfa-result').innerText = result;
+}
+
+function minimizeDFA() {
+    let states = fa.states;
+    let alphabet = fa.alphabet;
+    let transitions = parseTransitions(document.getElementById('transitions').value);
+    let startState = fa.startState;
+    let acceptStates = fa.acceptStates;
+
+    // Initialize partitions
+    let nonAcceptStates = states.filter(state => !acceptStates.includes(state));
+    let partitions = [new Set(acceptStates), new Set(nonAcceptStates)];
+
+    // Refining partitions
+    let changed = true;
+    while (changed) {
+        changed = false;
+        let newPartitions = [];
+
+        for (let part of partitions) {
+            let splits = new Map();
+            for (let state of part) {
+                let signature = alphabet.map(symbol => {
+                    let nextState = transitions[state] ? transitions[state][symbol] : null;
+                    for (let i = 0; i < partitions.length; i++) {
+                        if (partitions[i].has(nextState)) return i;
+                    }
+                    return -1;
+                }).join(',');
+
+                if (!splits.has(signature)) splits.set(signature, new Set());
+                splits.get(signature).add(state);
+            }
+
+            newPartitions.push(...splits.values());
+        }
+
+        if (newPartitions.length !== partitions.length) {
+            partitions = newPartitions;
+            changed = true;
+        }
+    }
+
+    // Create minimized DFA
+    let minimizedDFA = {
+        states: partitions.map((part, idx) => `Q${idx}`),
+        alphabet,
+        transitions: {},
+        start: null,
+        accept: []
+    };
+
+    let stateMap = new Map();
+    partitions.forEach((part, idx) => {
+        part.forEach(state => stateMap.set(state, `Q${idx}`));
+    });
+
+    minimizedDFA.start = stateMap.get(startState);
+    acceptStates.forEach(state => {
+        let newState = stateMap.get(state);
+        if (!minimizedDFA.accept.includes(newState)) minimizedDFA.accept.push(newState);
+    });
+
+    partitions.forEach((part, idx) => {
+        let repState = [...part][0];
+        minimizedDFA.transitions[`Q${idx}`] = {};
+        for (let symbol of alphabet) {
+            if (transitions[repState] && transitions[repState][symbol]) {
+                minimizedDFA.transitions[`Q${idx}`][symbol] = stateMap.get(transitions[repState][symbol]);
+            }
+        }
+    });
+
+    // Display minimized DFA
+    document.getElementById('dfa-result').textContent = JSON.stringify(minimizedDFA, null, 2);
+}

@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finite Automata Manager</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>Finite Automata Manager</h1>
-        
+
         <!-- FA Design Section -->
         <div class="section">
             <h2>Design Finite Automaton</h2>
@@ -45,6 +45,20 @@
             <input type="text" id="test-string" placeholder="e.g. abba">
             <button onclick="testString()">Test String</button>
             <p id="acceptance-result"></p>
+        </div>
+
+        <!-- NFA to DFA Section -->
+        <div class="section">
+            <h2>Convert NFA to DFA</h2>
+            <button onclick="convertNFAtoDFA()">Convert NFA to DFA</button>
+            <pre id="nfa-dfa-result"></pre>
+        </div>
+
+        <!-- Minimize DFA Section -->
+        <div class="section">
+            <h2>Minimize DFA</h2>
+            <button onclick="minimizeDFA()">Minimize DFA</button>
+            <pre id="dfa-result"></pre>
         </div>
     </div>
 
