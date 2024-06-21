@@ -200,7 +200,7 @@ function minimizeDFA() {
 
     // Create minimized DFA
     let minimizedDFA = {
-        states: partitions.map((part, idx) => `Q${idx}`),
+        states: partitions.map(part => [...part].join(',')),
         alphabet,
         transitions: {},
         startState: null,
@@ -208,8 +208,9 @@ function minimizeDFA() {
     };
 
     let stateMap = new Map();
-    partitions.forEach((part, idx) => {
-        part.forEach(state => stateMap.set(state, `Q${idx}`));
+    partitions.forEach(part => {
+        let stateName = [...part].join(',');
+        part.forEach(state => stateMap.set(state, stateName));
     });
 
     minimizedDFA.startState = stateMap.get(startState);
@@ -218,12 +219,13 @@ function minimizeDFA() {
         if (!minimizedDFA.acceptStates.includes(newState)) minimizedDFA.acceptStates.push(newState);
     });
 
-    partitions.forEach((part, idx) => {
+    partitions.forEach(part => {
         let repState = [...part][0];
-        minimizedDFA.transitions[`Q${idx}`] = {};
+        let stateName = [...part].join(',');
+        minimizedDFA.transitions[stateName] = {};
         for (let symbol of alphabet) {
             if (transitions[repState] && transitions[repState][symbol]) {
-                minimizedDFA.transitions[`Q${idx}`][symbol] = stateMap.get(transitions[repState][symbol]);
+                minimizedDFA.transitions[stateName][symbol] = stateMap.get(transitions[repState][symbol]);
             }
         }
     });
@@ -231,3 +233,4 @@ function minimizeDFA() {
     // Display minimized DFA
     document.getElementById('dfa-result').textContent = JSON.stringify(minimizedDFA, null, 2);
 }
+
