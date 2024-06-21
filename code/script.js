@@ -203,8 +203,8 @@ function minimizeDFA() {
         states: partitions.map((part, idx) => `Q${idx}`),
         alphabet,
         transitions: {},
-        start: null,
-        accept: []
+        startState: null,
+        acceptStates: []
     };
 
     let stateMap = new Map();
@@ -212,10 +212,10 @@ function minimizeDFA() {
         part.forEach(state => stateMap.set(state, `Q${idx}`));
     });
 
-    minimizedDFA.start = stateMap.get(startState);
+    minimizedDFA.startState = stateMap.get(startState);
     acceptStates.forEach(state => {
         let newState = stateMap.get(state);
-        if (!minimizedDFA.accept.includes(newState)) minimizedDFA.accept.push(newState);
+        if (!minimizedDFA.acceptStates.includes(newState)) minimizedDFA.acceptStates.push(newState);
     });
 
     partitions.forEach((part, idx) => {
