@@ -35,16 +35,25 @@ function designFA() {
     alert('Finite Automaton designed successfully!');
 }
 
+// Checking if The FA is DFA or not
 function checkDeterministic() {
     let isDeterministic = true;
 
     for (let state in fa.transitions) {
         for (let symbol in fa.transitions[state]) {
+            // Check if there if there is more than one transition 
+            // for a symbol from a state
             if (fa.transitions[state][symbol].length > 1) {
+                isDeterministic = false;
+                break;  
+            }
+            // check if there are epsilon ('eps') transitions
+            if (symbol === 'eps') {
                 isDeterministic = false;
                 break;
             }
         }
+        if (!isDeterministic) break;
     }
 
     let resultElement = document.getElementById('deterministic-result');
@@ -57,6 +66,7 @@ function checkDeterministic() {
     }
 }
 
+// Test String Acceptance
 function testString() {
     let input = document.getElementById('test-string').value;
     let currentState = fa.startState;
